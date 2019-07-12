@@ -10,14 +10,15 @@ class Action(object):
     '''
 
 
-    def __init__(self, event_info, arg):
+    def __init__(self, event_info, args):
         '''
         Constructor
         '''
         self.name, self.next_state, self.new_event = event_info
-        self.arg = arg
-        self.output = None
+        self.args = args
+        self.output = None       
+        
         
     def __str__ (self):
-        return f"{self.name}, {self.arg}, {self.next_state}, {self.new_event}"
+        return f"{self.name}, {self.args}, {self.next_state}, {self.new_event}"
         
