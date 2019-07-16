@@ -13,12 +13,3 @@ class Event_queue (queue.Queue):
         '''
         queue.Queue.__init__(self, *args)        
         
-
-class Action_queue (queue.Queue):
-    def __init__(self, *args, **kargs):
-        '''
-        Constructor
-        '''
-        queue.Queue.__init__(self, *args)        
-
-    

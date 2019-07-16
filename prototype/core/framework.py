@@ -11,7 +11,7 @@ import traceback
 import time
 
 from utils.DRPF_logger import DRPF_logger
-from core.queues import Action_queue, Event_queue
+from core.queues import Event_queue
 
 from models.processing_context import Processing_context
 from models.arguments import Arguments
@@ -33,8 +33,7 @@ class Framework(object):
         Creates the event_queue and the action queue
         '''
         self.event_queue = Event_queue()
-        self.event_queue_hi = Event_queue()
-        self.action_queue = Action_queue(5)        
+        self.event_queue_hi = Event_queue()   
         
         self.pipeline = pipeline
         self.context = Processing_context (self.event_queue_hi)
@@ -52,25 +51,7 @@ class Framework(object):
             #return Event ('time_tick', args)
             return None
         
-    def get_action (self):
-        try:
-            return self.action_queue.get(True, Config.action_timeout)
-        except:
-            return None        
-    
-    def push_action (self, action):
-        cnt = Config.push_retries
-        while cnt > 0:
-            try:
-                self.action_queue.put(action)
-                return
-            except:
-                traceback.print_exc()
-                DRPF_logger.warning ("Action queue full, pausing for 5s before re-trying")
-                time.sleep (5)
-            cnt = cnt - 1
-        DRPF_logging.warning ("Failed to push to action queue after {} tries".format(Config.push_retries))    
-        
+
     def _push_event (self, event_name, args):
         '''
         Pushes high priority events
@@ -99,34 +80,6 @@ class Framework(object):
         DRPF_logger.info (f'Event to action {event_info}')
         return Action (event_info, args=event.args)
     
-    def start_event_loop (self):
-        '''
-        This is a thread running the event loop.
-        '''
-        def loop ():
-            while self.keep_going:
-                try:
-                    event = ''
-                    event = self.get_event ()
-                    if event is None:                        
-                        DRPF_logger.info ("No new events - do nothing")
-                        continue
-                                 
-                    action = self.event_to_action (event, self.context)
-                    self.push_action (action)
-                        
-                except Exception as e:
-                    traceback.print_exc()
-                    DRPF_logger.error (f'Exception while processing event {event}, {e}')
-                    break
-                
-            self.keep_going = False
-                    
-                
-        thr = threading.Thread(name='event_loop', target=loop)
-        thr.setDaemon(True)
-        thr.start()
-        
     def execute (self, action, context):
         '''
         Executes one action
@@ -166,15 +119,19 @@ class Framework(object):
         '''
         def loop ():
             while self.keep_going:
-                action = ''
-                try:
-                    action = self.get_action ()
-                    if action is None:
+                try:    
+                    action = ''
+                    event = ''
+                    event = self.get_event ()
+                    if event is None:                        
+                        DRPF_logger.info ("No new events - do nothing")
+                    
                         if self.event_queue.qsize() == 0 and \
                             self.event_queue_hi.qsize() == 0:
                             DRPF_logger.info (f"No pending events or actions, terminating")
                             self.keep_going = False
-                    else:                               
+                    else:       
+                        action = self.event_to_action (event, self.context)                        
                         self.execute(action, self.context)
                     if self.context.state == 'stop':
                         break
@@ -200,8 +157,7 @@ class Framework(object):
     def start (self):
         '''
         Starts the event loop and the action loop
-        '''
-        self.start_event_loop ()        
+        '''  
         self.start_action_loop ()
         
     def waitForEver (self):            
