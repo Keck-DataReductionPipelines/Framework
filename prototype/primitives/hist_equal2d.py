@@ -22,6 +22,8 @@ class hist_equal2d (Base_primitive):
         Constructor
         '''    
         Base_primitive.__init__(self, action, context)
+        self.cut_width = Config.hist_equal_cut_width
+        self.n_hist = Config.hist_equal_length
         
     def _remap (self, arr, from_lo, from_hi, to_lo, to_hi):
         if from_hi == from_lo:
@@ -65,8 +67,8 @@ class hist_equal2d (Base_primitive):
        
     
     def _applyAHEC (self, img):
-        cut_width = Config.hist_equal_cut_width
-        n_hist = Config.hist_equal_length
+        cut_width = self.cut_width
+        n_hist = self.n_hist
         flatData = img.flatten()
         leng = len(flatData)
         histg, edges = np.histogram(flatData, bins=n_hist, density=False)

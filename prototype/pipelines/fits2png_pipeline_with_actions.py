@@ -13,49 +13,35 @@ Created on Jul 8, 2019
 @author: shkwok
 '''
 
-from pipelines.base_pipeline import Base_pipeline
-from primitives.noise_removal import noise_removal
-from primitives.hist_equal2d import hist_equal2d
+from pipelines.fits2png_pipeline import Fits2png_pipeline
+from primitives.noise_removal import noise_removal as _noise_removal
+from primitives.hist_equal2d import hist_equal2d as _hist_equal2d
 from primitives.simple_fits_reader import simple_fits_reader
 from primitives.save_png import save_png
 
 
-class Fits2png_pipeline_with_actions (Base_pipeline):
+class Fits2png_pipeline_with_actions (Fits2png_pipeline):
     """
     Pipeline to convert FITS to PNG including median noise removal and histogram equalization.
     
     """
-    
-    event_table = {
-    'next_file'     : ('read_file', 'file_ready', 'file_ready'),
-    'file_ready'    : ('remove_noise', 'noise_removed', 'noise_removed'),
-    'noise_removed' : ('hist_eq_alternative', 'histeq_done', 'histeq_done'),    
-    'histeq_done'   : ('save_png', 'idle', None)
-    }
-
     def __init__ (self):
         '''
         Constructor
         '''
-        Base_pipeline.__init__(self)        
+        Fits2png_pipeline.__init__(self)        
     
-    def read_file (self, action, context):
-        fr = simple_fits_reader (action, context)
-        return fr.apply()
-        
-    def remove_noise (self, action, context):
-        nr = noise_removal (action, context)
+    def noise_removal (self, action, context):
+        nr = _noise_removal (action, context)
+        nr.sigmas = (1,1)
+        nr.sizes = (3, 3)
         return nr.apply()
     
-    def hist_eq_alternative (self, action, context):
-        hq = hist_equal2d(action, context)
+    def hist_equal2d (self, action, context):
+        hq = _hist_equal2d(action, context)
+        hq.cut_width = 1.5
         return hq.apply()
     
-    def save_png (self, action, context):
-        sp = save_png(action, context)
-        action.args.out_name = ''
-        return sp.apply ()
-
     
 if __name__ == '__main__':
     """

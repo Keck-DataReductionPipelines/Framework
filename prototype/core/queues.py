@@ -6,12 +6,12 @@ Created on Jul 8, 2019
 
 import queue
 
-class Event_queue (queue.PriorityQueue):  
+class Event_queue (queue.Queue):  
     def __init__(self, *args, **kargs):
         '''
         Constructor
         '''
-        queue.PriorityQueue.__init__(self, *args)        
+        queue.Queue.__init__(self, *args)        
         
 
 class Action_queue (queue.Queue):

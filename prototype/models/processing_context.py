@@ -12,13 +12,13 @@ class Processing_context:
     classdocs
     '''
 
-    def __init__(self, event_queue):
+    def __init__(self, event_queue_hi):
         '''
         Constructor
         '''
         self.name = 'Processing_context'
         self.state = 'Undefined'
-        self.event_queue = event_queue
+        self.event_queue_hi = event_queue_hi
         
-    def emit_event (self, name, arg):
-        self.event_queue.put_nowait(Event (name, arg))
+    def push_event (self, name, args):
+        self.event_queue_hi.put(Event (name, args))

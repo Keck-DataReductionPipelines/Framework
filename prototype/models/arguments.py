@@ -10,6 +10,7 @@ class Arguments(object):
     '''
     
     def __init__ (self, **kargs):
+        self.name = 'undef'
         self.__dict__.update(kargs)
 
     def __str__ (self):

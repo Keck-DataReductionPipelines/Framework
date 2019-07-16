@@ -24,7 +24,7 @@ class Config:
     
     push_retries = 5
     event_timeout = 1
-    action_timeout = 5
+    action_timeout = 1
     
     hist_equal_cut_width = 3
     hist_equal_length = 256 * 256

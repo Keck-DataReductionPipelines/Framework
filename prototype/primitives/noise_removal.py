@@ -20,7 +20,8 @@ class noise_removal (Base_primitive):
         '''
         Constructor
         '''
-        Base_primitive.__init__(self, action, context)
+        Base_primitive.__init__(self, action, context)        
+        self.sigmas, self.sizes = Config.denoise_sigmas, Config.denoise_sizes
         
     def _denoise (self, _img, size=3, sigmas=3):
         """
@@ -47,7 +48,7 @@ class noise_removal (Base_primitive):
         return out
             
     def _perform (self):
-        sigmas, sizes = Config.denoise_sigmas, Config.denoise_sizes
+        sigmas, sizes = self.sigmas, self.sizes
         args = self.action.args
         DRPF_logger.info (f"noise removal args {args}")        
         hdus = args.hdus
