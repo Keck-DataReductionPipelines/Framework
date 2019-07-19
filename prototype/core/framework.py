@@ -126,10 +126,10 @@ class Framework(object):
                     if event is None:                        
                         DRPF_logger.info ("No new events - do nothing")
                     
-                        if self.event_queue.qsize() == 0 and \
-                            self.event_queue_hi.qsize() == 0:
-                            DRPF_logger.info (f"No pending events or actions, terminating")
-                            self.keep_going = False
+                        #if self.event_queue.qsize() == 0 and \
+                        #    self.event_queue_hi.qsize() == 0:
+                        #    DRPF_logger.info (f"No pending events or actions, terminating")
+                        #    self.keep_going = True
                     else:       
                         action = self.event_to_action (event, self.context)                        
                         self.execute(action, self.context)
