@@ -13,12 +13,16 @@ import time
 from utils.DRPF_logger import DRPF_logger
 from core.queues import Event_queue
 
+# Server Task import
+from core.server_task import DRPF_server_handler, start_http_server
+
 from models.processing_context import Processing_context
 from models.arguments import Arguments
 from models.action import Action
 from models.event import Event
 
 from config.framework_config import Config
+
 
 class Framework(object):
     '''
@@ -47,10 +51,12 @@ class Framework(object):
             except:                                       
                 return self.event_queue.get(True, Config.event_timeout)
         except Exception as e: 
-            #args = Arguments(name='tick', time=datetime.datetime.ctime(datetime.datetime.now()))
-            #return Event ('time_tick', args)
-            return None
-        
+            ev = Config.no_event_event
+            if ev is None:
+                return None
+            time.sleep(Config.no_event_wait_time)
+            ev.args = Arguments(name=ev.name, time=datetime.datetime.ctime(datetime.datetime.now()))  
+            return ev
 
     def _push_event (self, event_name, args):
         '''
@@ -68,7 +74,6 @@ class Framework(object):
         Appends low priority event to the end of the queue
         '''                
         self.event_queue.put (Event (event_name, args))
-     
                                    
     def event_to_action (self, event, context):
         '''
@@ -117,6 +122,7 @@ class Framework(object):
         '''
         This is a thread running the action loop.
         '''
+
         def loop ():
             while self.keep_going:
                 try:    
@@ -148,6 +154,7 @@ class Framework(object):
         '''
         Captures keyboard interrupt
         '''
+
         def handler (*args):
             self.keep_going = False
 
@@ -163,3 +170,17 @@ class Framework(object):
     def waitForEver (self):            
         while self.keep_going:
             time.sleep (1)
+
+    #
+    # Methods for HTTP server
+    #
+    def http_server_loop (self):        
+        start_http_server(self)
+    
+    def start_http_server (self):
+        thr = threading.Thread (target=self.http_server_loop)
+        thr.setDaemon(True)
+        thr.start()
+        
+    def getPendingEvents (self):
+        return self.event_queue.get_pending(), self.event_queue_hi.get_pending()

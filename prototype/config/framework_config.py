@@ -11,6 +11,9 @@ To do:
 @author: shkwok
 '''
 
+from models.event import Event
+import datetime
+
 class Config:
     
     name = 'DRP-Framework'
@@ -32,6 +35,15 @@ class Config:
     logger_config_file = "../config/logger.conf"
 
     output_directory = "output"
+    
+    # What happens when there are no more events ?
+    # If no_event_event is None then framework event loop will stop 
+    no_event_event = Event ('time_tick', None)
+    no_event_wait_time = 5 # sec
+    
+    # HTTP
+    http_server_port = 50100
+    doc_root = "."
     
     # end of config
     
