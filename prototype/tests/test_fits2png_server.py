@@ -19,7 +19,6 @@ from models.arguments import Arguments
 from config.framework_config import Config
 
 import time
-from tests import test_framework
 
 #
 # Local functions
