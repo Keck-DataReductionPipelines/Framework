@@ -10,7 +10,9 @@ import signal
 import traceback
 import time
 
-from utils.DRPF_logger import DRPF_logger
+import logging
+import logging.config
+
 from core.queues import Event_queue
 
 # Server Task import
@@ -21,8 +23,7 @@ from models.arguments import Arguments
 from models.action import Action
 from models.event import Event
 
-from config.framework_config import Config
-
+from config.framework_config import ConfigClass
 
 class Framework(object):
     '''
@@ -30,31 +31,37 @@ class Framework(object):
     There are two threads: the event loop and the action loop.
     '''
     
-    def __init__(self, pipeline):
+    def __init__(self, pipeline, configFile):
         '''
         pipeline: a class containing recipes
         
         Creates the event_queue and the action queue
         '''
+        self.config = ConfigClass (configFile)
+        logging.config.fileConfig(self.config.logger_config_file)
+        self.logger = logging.getLogger("DRPF")
+        
+        pipeline.set_logger (self.logger)
+        
         self.event_queue = Event_queue()
         self.event_queue_hi = Event_queue()   
         
         self.pipeline = pipeline
-        self.context = Processing_context (self.event_queue_hi)
+        self.context = Processing_context (self.event_queue_hi, self.logger, self.config)
         self.keep_going = True        
         self.init_signal ()
-        
+    
     def get_event (self):
         try:
             try:
                 return self.event_queue_hi.get_nowait()
-            except:                                       
-                return self.event_queue.get(True, Config.event_timeout)
+            except:                                  
+                return self.event_queue.get(True, self.config.event_timeout)
         except Exception as e: 
-            ev = Config.no_event_event
+            ev = self.config.no_event_event
             if ev is None:
                 return None
-            time.sleep(Config.no_event_wait_time)
+            time.sleep(self.config.no_event_wait_time)
             ev.args = Arguments(name=ev.name, time=datetime.datetime.ctime(datetime.datetime.now()))  
             return ev
 
@@ -66,7 +73,7 @@ class Framework(object):
         Only used in execute.
         
         '''
-        DRPF_logger.info (f"Push event {event_name}, {args.name}")
+        self.logger.info (f"Push event {event_name}, {args.name}")
         self.event_queue_hi.put(Event (event_name, args))
         
     def append_event (self, event_name, args):
@@ -82,7 +89,7 @@ class Framework(object):
         Note that event.args comes from previous action.output.
         '''
         event_info = self.pipeline.event_to_action (event, context)
-        DRPF_logger.info (f'Event to action {event_info}')
+        self.logger.info (f'Event to action {event_info}')
         return Action (event_info, args=event.args)
     
     def execute (self, action, context):
@@ -91,20 +98,20 @@ class Framework(object):
         The input for the action is in action.args.
         The action returns action_output and it is passed to the next event if action is successful.
         '''
-        instr = self.pipeline
+        pipeline = self.pipeline
         action_name = action.name
         try:
-            if instr.get_pre_action(action_name)(action, context):
-                if Config.print_trace:
-                    DRPF_logger.info ('Executing action ' + action.name)
-                action_output = instr.get_action(action_name)(action, context)
-                if instr.get_post_action(action_name)(action, context):
+            if pipeline.get_pre_action(action_name)(action, context):
+                if self.config.print_trace:
+                    self.logger.info ('Executing action ' + action.name)
+                action_output = pipeline.get_action(action_name)(action, context)
+                if pipeline.get_post_action(action_name)(action, context):
                     if not action.new_event is None:
                         self._push_event (action.new_event, action_output)
                     if not action.next_state is None:
                         context.state = action.next_state
-                    if Config.print_trace:
-                        DRPF_logger.info ('Action ' + action.name + ' done')
+                    if self.config.print_trace:
+                        self.logger.info ('Action ' + action.name + ' done')
                     return
                 else:
                     # post-condition failed
@@ -113,9 +120,9 @@ class Framework(object):
                 # Failed pre-condition
                 context.state = 'stop'
         except:
-            DRPF_logger.error ("Exception while invoking {}. Execution stopped.".format (action_name))
+            self.logger.error ("Exception while invoking {}. Execution stopped.".format (action_name))
             context.state = 'stop'
-            if Config.print_trace:
+            if self.config.print_trace:
                 traceback.print_exc()
     
     def start_action_loop (self):
@@ -130,11 +137,11 @@ class Framework(object):
                     event = ''
                     event = self.get_event ()
                     if event is None:                        
-                        DRPF_logger.info ("No new events - do nothing")
+                        self.logger.info ("No new events - do nothing")
                     
                         if self.event_queue.qsize() == 0 and \
                             self.event_queue_hi.qsize() == 0:
-                            DRPF_logger.info (f"No pending events or actions, terminating")
+                            self.logger.info (f"No pending events or actions, terminating")
                             self.keep_going = False
                     else:       
                         action = self.event_to_action (event, self.context)                        
@@ -142,7 +149,7 @@ class Framework(object):
                     if self.context.state == 'stop':
                         break
                 except Exception as e:
-                    DRPF_logger.error (f"Exception while processing action {action}, {e}")
+                    self.logger.error (f"Exception while processing action {action}, {e}")
                     break                
             self.keep_going = False
             
@@ -175,7 +182,7 @@ class Framework(object):
     # Methods for HTTP server
     #
     def http_server_loop (self):        
-        start_http_server(self)
+        start_http_server(self, self.config, self.logger)
     
     def start_http_server (self):
         thr = threading.Thread (target=self.http_server_loop)

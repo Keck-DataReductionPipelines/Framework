@@ -5,10 +5,6 @@ Created on Jul 9, 2019
 '''
 
 import logging
-import logging.config
 
-from config.framework_config import Config
-
-logging.config.fileConfig(Config.logger_config_file)
-DRPF_logger = logging.getLogger('DRPF')
-
+class DRPF_Logger (logging.getLoggerClass()):
+    pass

@@ -8,7 +8,6 @@ import os.path
 import glob
 from primitives.base_primitive import Base_primitive
 from models.arguments import Arguments
-from utils.DRPF_logger import DRPF_logger
 
 class create_contact_sheet_HTML(Base_primitive):
     '''
@@ -40,7 +39,7 @@ class create_contact_sheet_HTML(Base_primitive):
         dir_name = args.dir_name
         out_name = args.out_name
         pattern = args.pattern
-        DRPF_logger.info (f"Creating contact sheet in {dir_name}, out_name={out_name}")
+        self.logger.info (f"Creating contact sheet in {dir_name}, out_name={out_name}")
         
         flist = sorted (glob.glob(dir_name + '/' + pattern))
         

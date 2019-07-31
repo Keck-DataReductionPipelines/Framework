@@ -8,7 +8,7 @@ This is the base pipeline.
 
 import sys
 import importlib
-from utils.DRPF_logger import DRPF_logger
+from utils.DRPF_logger import DRPF_Logger
 
 class Base_pipeline:
     '''
@@ -24,9 +24,13 @@ class Base_pipeline:
             'echo':      ('echo', 'stop', None),
             'time_tick': ('echo', None, None),
             }
+        self.logger = DRPF_Logger(__name__)
 
     def true (self, *args):
         return True
+    
+    def set_logger (self, lger):
+        self.logger = lger
     
     def _get_action_apply_method (self, klass):
         def f (action, context):
@@ -47,6 +51,7 @@ class Base_pipeline:
         '''      
         name = prefix + action
         try:
+            # Checks if method defined in the class
             return self.__getattribute__ (name)            
         except:
             try:
@@ -64,13 +69,13 @@ class Base_pipeline:
         return self._get_action('', action)
     
     def noop (self, action, context):
-        DRPF_logger.info (f"NOOP action {action}")
+        self.logger.info (f"NOOP action {action}")
     
     def no_more_action (self, ation, context):
-        DRPF_logger.info ("No more action, terminating")
+        self.logger.info ("No more action, terminating")
         
     def echo (self, action, context):
-        DRPF_logger.info  (f"Echo action {action}")
+        self.logger.info  (f"Echo action {action}")
         
     def _event_to_action (self, event, context):
         '''

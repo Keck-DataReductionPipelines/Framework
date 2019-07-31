@@ -11,23 +11,20 @@ import glob
 from core.framework import Framework
 
 from pipelines.fits2png_pipeline_with_actions import Fits2png_pipeline_with_actions
-from utils.DRPF_logger import DRPF_logger
 from models.arguments import Arguments
 
-from config.framework_config import Config
 
 import time
 
 if __name__ == '__main__':
-    DRPF_logger.info ("Starting test")
     
     if len (sys.argv) >= 2:
         path = sys.argv[1]
     
         pipeline = Fits2png_pipeline_with_actions() 
-        framework = Framework(pipeline)
+        framework = Framework(pipeline, "config.cfg")
         
-        DRPF_logger.info ("Framework initialized")
+        framework.logger.info ("Framework initialized")
             
         if os.path.isdir(path):
             flist = glob.glob(path + '/*.fits')
@@ -36,7 +33,7 @@ if __name__ == '__main__':
                 framework.append_event ('next_file', args)
                     
             
-            out_dir = Config.output_directory
+            out_dir = self.config.output_directory
             out_name = 'test_w_actions.html'
             framework.append_event ('contact_sheet', 
                 Arguments(dir_name=out_dir, pattern='*.png', out_name=out_name, cnt=len(flist)))            

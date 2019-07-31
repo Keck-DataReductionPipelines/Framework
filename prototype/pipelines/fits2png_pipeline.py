@@ -14,7 +14,6 @@ Created on Jul 8, 2019
 """
 
 from pipelines.base_pipeline import Base_pipeline
-from utils.DRPF_logger import DRPF_logger
 
 """
 from primitives.noise_removal import noise_removal

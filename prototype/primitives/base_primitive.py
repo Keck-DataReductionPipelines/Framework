@@ -39,6 +39,8 @@ class Base_primitive:
         self.action = action
         self.context = context
         self.output = None
+        self.logger = context.logger
+        self.config = context.config
         
     def _pre_condition (self):
         return True

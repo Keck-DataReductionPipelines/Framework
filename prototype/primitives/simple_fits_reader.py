@@ -9,7 +9,6 @@ from astropy.utils.exceptions import AstropyWarning
 import warnings
 
 from models.arguments import Arguments
-from utils.DRPF_logger import DRPF_logger
 from primitives.base_primitive import Base_primitive
 
 
@@ -35,7 +34,7 @@ class simple_fits_reader (Base_primitive):
         Returns HDUs or (later) data model
         '''
         name = self.action.args.name
-        DRPF_logger.info (f"Reading {name}")
+        self.logger.info (f"Reading {name}")
         out_args = Arguments()
         out_args.name = name
         out_args.hdus = self.open(name)

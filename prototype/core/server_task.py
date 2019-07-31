@@ -9,9 +9,7 @@ Created on Jul 19, 2019
 
 import json
 import socket
-from config.framework_config import Config
 from utils.easyHTTP import EasyHTTPHandler, EasyHTTPServer, EasyHTTPServerThreaded
-from utils.DRPF_logger import DRPF_logger
 from utils.try_wrapper import tryEx
 
 from models.arguments import Arguments
@@ -55,7 +53,7 @@ class DRPF_server_handler (EasyHTTPHandler):
     
     def add_create_contact_sheet_event(self, req, qstr):
         self._getParameters(qstr)
-        out_dir = Config.output_directory
+        out_dir = self.DRPFramework.config.output_directory
         args = Arguments(dir_name=out_dir, pattern="*.png",
                          out_name="contact_sheet.html", cnt=-1)
         self.DRPFramework.append_event ("contact_sheet", args)
@@ -66,18 +64,18 @@ class DRPF_server_handler (EasyHTTPHandler):
         return json.dumps(qstr), self.PlainTextType            
 
 
-def start_http_server (fw):
-    port = Config.http_server_port        
-    DRPF_server_handler.DocRoot = Config.doc_root
+def start_http_server (fw, config, logger):
+    port = config.http_server_port        
+    DRPF_server_handler.DocRoot = config.doc_root
     DRPF_server_handler.DRPFramework = fw
     httpd = EasyHTTPServerThreaded (("", port), DRPF_server_handler)
     hostname = socket.gethostname()
-    DRPF_logger.info ("HTTPD started %s %d" % (socket.gethostbyaddr(socket.gethostbyname(hostname)), port))
-    DRPF_logger.info ("DocRoot is " +  DRPF_server_handler.DocRoot)
+    logger.info ("HTTPD started %s %d" % (socket.gethostbyaddr(socket.gethostbyname(hostname)), port))
+    logger.info ("DocRoot is " +  DRPF_server_handler.DocRoot)
     
     try:
         httpd.serve_forever()
         httpd.shutdown()
     except Exception as e:
         traceback.print_exc()
-        DRPF_logger.info ("HTTPD terminated")
+        logger.info ("HTTPD terminated")

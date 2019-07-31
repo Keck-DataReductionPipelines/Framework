@@ -9,23 +9,23 @@ import threading
 import time
 import glob
 
-from utils import framework_config
-
 
 class Data_set:
     '''
     classdocs
     '''
 
-    def __init__(self, dirname):
+    def __init__(self, dirname, logger, config):
         '''
         Constructor
         '''
         self.dir_name = dirname
+        self.logger = logger
+        self.config = config
         self.data_table = {}
         self.must_stop = False
-        self.monitor_interval = framework_config.Config.monitor_interval
-        self.file_type = framework_config.Config.file_type
+        self.monitor_interval = config.monitor_interval
+        self.file_type = config.Config.file_type
         self.update_date_set()
     
     def digest_new_item (self, name):

@@ -8,13 +8,9 @@ This is a simple sanity test.
 
 import time
 
-
-from utils.DRPF_logger import DRPF_logger
-
 from pipelines.base_pipeline import Base_pipeline
-
-from core.framework import Framework
 from models.arguments import Arguments
+
 
 class Test_pipeline(Base_pipeline):
     '''
@@ -37,25 +33,25 @@ class Test_pipeline(Base_pipeline):
         self.event_table = table
 
     def action1 (self, action, contenxt):
-        DRPF_logger.info ("Action 1 - sleep 3")
+        self.logger.info ("Action 1 - sleep 3")
         time.sleep(3)
-        DRPF_logger.info ("Action 1 - done")
+        self.logger.info ("Action 1 - done")
         return Arguments(name='a1')
         
     def action2 (self, action, contenxt):
-        DRPF_logger.info ("Action 2 - sleep 10")
+        self.logger.info ("Action 2 - sleep 10")
         time.sleep (10)
-        DRPF_logger.info ("Action 2 - done")
+        self.logger.info ("Action 2 - done")
         return Arguments (name='a2')
         
     def action3 (self, action, context):
-        DRPF_logger.info ("Action 3 - sleep 2")
+        self.logger.info ("Action 3 - sleep 2")
         time.sleep (2)
-        DRPF_logger.info ("Action 3 - done")
+        self.logger.info ("Action 3 - done")
         return Arguments (name='a3')
         
     def pre_action3 (self, action, context):
-        DRPF_logger.info ("Pre action 3")
+        self.logger.info ("Pre action 3")
         return True
     
     def post_action4 (self, action, context):

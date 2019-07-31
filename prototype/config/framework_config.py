@@ -13,37 +13,68 @@ To do:
 
 from models.event import Event
 import datetime
+from Cython.Shadow import typeof
 
-class Config:
-    
-    name = 'DRP-Framework'
-    monitor_interval = 10 # sec
-    file_type = '*' # or '*.fits'
-    
-    print_trace = True
-    
-    denoise_sigmas = (1, 3)
-    denoise_sizes = (3, 3)
-    
-    push_retries = 5
-    event_timeout = 1
-    action_timeout = 1
-    
-    hist_equal_cut_width = 3
-    hist_equal_length = 256 * 256
-    
-    logger_config_file = "../config/logger.conf"
 
-    output_directory = "output"
+class ConfigClass:    
     
-    # What happens when there are no more events ?
-    # If no_event_event is None then framework event loop will stop 
-    no_event_event = Event ('time_tick', None)
-    no_event_wait_time = 5 # sec
+    def __init__ (self, cgfile=None):
+        self.properties = {}
+        if not cgfile is None:
+            self.read(cgfile)
     
-    # HTTP
-    http_server_port = 50100
-    doc_root = "."
+    def getType (self, value):
+        value = value.strip()
+        try:
+            i = int(value)
+            return i
+        except:
+            pass
+        
+        try:
+            f = float(value)
+            return f
+        except:
+            pass
+        
+        if value == "True":
+            return True
+        if value == "False":
+            return False
+        
+        try:
+            return eval(value)
+        except:
+            return value
+        
+    def read (self, fname):        
+        with open(fname, 'r') as fh:
+            props = self.properties
+            for line in fh:
+                line = line.strip()
+                if len(line) < 1: continue
+                try:
+                    idx = line.index("#")
+                    line = line[:idx]
+                except:
+                    pass
+                if len(line) < 1: continue
+                parts = line.split('=')
+                if len(parts) > 1:
+                    key, val = parts
+                    key = key.strip()              
+                    props[key] = self.getType (val)
+            return
+        raise Exception("Failed to read configuration file " + fname)
+
+    def __getattr__ (self, key):
+        return self.properties[key]
+
+if __name__ == "__main__":
+    Config = ConfigClass ()
+    Config.read("config.cfg")
+    #print(Config.__dict__)
     
-    # end of config
+    print (Config.denoise_sigmas[1])
+    print (Config.no_event_event)
     

@@ -9,10 +9,6 @@ import os
 import os.path
 
 from models.arguments import Arguments
-from utils.DRPF_logger import DRPF_logger
-
-from config.framework_config import Config
-
 from primitives.base_primitive import Base_primitive
 import matplotlib.pyplot as plt
 
@@ -29,7 +25,7 @@ class save_png(Base_primitive):
         Base_primitive.__init__(self, action, context)
         
     def _perform (self):
-        output_dir = Config.output_directory
+        output_dir = self.config.output_directory
         os.makedirs(output_dir, exist_ok=True)
         args = self.action.args
         name = os.path.basename(args.name)
@@ -41,7 +37,7 @@ class save_png(Base_primitive):
                 
         plt.imsave (out_name, img1)
         
-        DRPF_logger.info("Saved {}".format(out_name))
+        self.logger.info("Saved {}".format(out_name))
         out_args = Arguments(name=out_name)
         return out_args
             

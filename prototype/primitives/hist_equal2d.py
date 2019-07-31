@@ -10,7 +10,6 @@ import numpy as np
 
 from models.arguments import Arguments
 from primitives.base_primitive import Base_primitive
-from config.framework_config import Config
 
 class hist_equal2d (Base_primitive):
     '''
@@ -22,8 +21,8 @@ class hist_equal2d (Base_primitive):
         Constructor
         '''    
         Base_primitive.__init__(self, action, context)
-        self.cut_width = Config.hist_equal_cut_width
-        self.n_hist = Config.hist_equal_length
+        self.cut_width = self.config.hist_equal_cut_width
+        self.n_hist = self.config.hist_equal_length
         
     def _remap (self, arr, from_lo, from_hi, to_lo, to_hi):
         if from_hi == from_lo:
@@ -87,7 +86,7 @@ class hist_equal2d (Base_primitive):
         return self._applyAHEqHelper(flatData, leng, from_lo, from_hi, 0, n_hist-1, n_hist, thold) 
         
     def _applyAHEq (self, img):
-        n_hist = Config.hist_equal_length
+        n_hist = self.config.hist_equal_length
         flatData = data.flatten()
         leng = len(flatData)
         histg, edges = np.histogram(flatData, bins=n_hist, density=False)

@@ -7,8 +7,6 @@ Created on Jul 8, 2019
 import numpy as np
 from models.arguments import Arguments
 from primitives.base_primitive import Base_primitive
-from config.framework_config import Config
-from utils.DRPF_logger import DRPF_logger
 
 class noise_removal (Base_primitive):
     '''
@@ -21,7 +19,7 @@ class noise_removal (Base_primitive):
         Constructor
         '''
         Base_primitive.__init__(self, action, context)        
-        self.sigmas, self.sizes = Config.denoise_sigmas, Config.denoise_sizes
+        self.sigmas, self.sizes = self.config.denoise_sigmas, self.config.denoise_sizes
         
     def _denoise (self, _img, size=3, sigmas=3):
         """
@@ -50,7 +48,7 @@ class noise_removal (Base_primitive):
     def _perform (self):
         sigmas, sizes = self.sigmas, self.sizes
         args = self.action.args
-        DRPF_logger.info (f"noise removal args {args}")        
+        self.logger.info (f"noise removal args {args}")        
         hdus = args.hdus
         
         img = hdus[0].data
