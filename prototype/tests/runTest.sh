@@ -1,10 +1,17 @@
 #!/bin/sh
 
-FULLPATH=`readlink -f $0`
+my_realpath() {
+    BNAME=`basename $1`
+    DNAME=`dirname $1`
+    FDIR=`(cd $DNAME; pwd)`
+    echo $FDIR/$BNAME
+}
+
+FULLPATH=`my_realpath $0`
 PROGDIR=`dirname $FULLPATH`
 PROGDIR=`dirname $PROGDIR`
 
-PYTHONPATH="$PROGDIR:${HOME}/hq/git/Framework/prototype:$PYTHONPATH"
+PYTHONPATH="${PROGDIR}:${PYTHONPATH}"
 export PYTHONPATH
 
 echo $PYTHONPATH $PROGDIR
