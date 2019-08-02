@@ -30,6 +30,7 @@ class save_png(Base_primitive):
         args = self.action.args
         name = os.path.basename(args.name)
         
+        os.makedirs(output_dir, exist_ok=True)
         out_name = output_dir + '/' + name.replace ('.fits', '.png')
         img = args.img
         h, w = img.shape
