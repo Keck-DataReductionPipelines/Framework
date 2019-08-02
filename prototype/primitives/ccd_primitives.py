@@ -72,9 +72,9 @@ class process_object (Base_primitive):
         Base_primitive.__init__(self, action, context)
         
     def _perform (self):
-        action.args = simple_fits_reader (action, context)()
-        action.args = noise_removal (action, context)()
-        return hist_equal2d (action, context)()
+        self.action.args = simple_fits_reader (self.action, self.context)()
+        self.action.args = noise_removal (self.action, self.context)()
+        return hist_equal2d (self.action, self.context)()
         
 def process_flat (action, context):
     args = simple_fits_reader (action, context)()
