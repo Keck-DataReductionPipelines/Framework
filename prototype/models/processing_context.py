@@ -5,6 +5,7 @@ Created on Jul 8, 2019
 '''
 
 from models.event import Event
+from models.data_set import Data_set
 
 
 class Processing_context:
@@ -21,6 +22,7 @@ class Processing_context:
         self.event_queue_hi = event_queue_hi
         self.logger = logger
         self.config = config
+        self.data_set = Data_set (None, logger, config)
         
     def push_event (self, name, args):
         self.event_queue_hi.put(Event (name, args))

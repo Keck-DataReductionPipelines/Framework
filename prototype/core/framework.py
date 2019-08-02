@@ -10,9 +10,6 @@ import signal
 import traceback
 import time
 
-import logging
-import logging.config
-
 from core.queues import Event_queue
 
 # Server Task import
@@ -22,8 +19,12 @@ from models.processing_context import Processing_context
 from models.arguments import Arguments
 from models.action import Action
 from models.event import Event
+from models.data_set import Data_set
+
+from utils.DRPF_logger import getLogger
 
 from config.framework_config import ConfigClass
+
 
 class Framework(object):
     '''
@@ -38,8 +39,7 @@ class Framework(object):
         Creates the event_queue and the action queue
         '''
         self.config = ConfigClass (configFile)
-        logging.config.fileConfig(self.config.logger_config_file)
-        self.logger = logging.getLogger("DRPF")
+        self.logger = getLogger (self.config.logger_config_file, name ="DRPF")
         
         pipeline.set_logger (self.logger)
         
@@ -47,7 +47,7 @@ class Framework(object):
         self.event_queue_hi = Event_queue()   
         
         self.pipeline = pipeline
-        self.context = Processing_context (self.event_queue_hi, self.logger, self.config)
+        self.context = Processing_context (self.event_queue_hi, self.logger, self.config)    
         self.keep_going = True        
         self.init_signal ()
     
@@ -107,7 +107,8 @@ class Framework(object):
                 action_output = pipeline.get_action(action_name)(action, context)
                 if pipeline.get_post_action(action_name)(action, context):
                     if not action.new_event is None:
-                        self._push_event (action.new_event, action_output)
+                        new_args = Arguments() if action_output is None else action_output 
+                        self._push_event (action.new_event, new_args)
                     if not action.next_state is None:
                         context.state = action.next_state
                     if self.config.print_trace:
@@ -118,7 +119,8 @@ class Framework(object):
                     context.state = 'stop'
             else:
                 # Failed pre-condition
-                context.state = 'stop'
+                if self.config.pre_condition_failed_stop:
+                    context.state = 'stop'
         except:
             self.logger.error ("Exception while invoking {}. Execution stopped.".format (action_name))
             context.state = 'stop'
@@ -191,3 +193,19 @@ class Framework(object):
         
     def getPendingEvents (self):
         return self.event_queue.get_pending(), self.event_queue_hi.get_pending()
+    
+    
+    #
+    # Methods to handle data set
+    #
+    def ingesst_data (self, path, files=None):
+        ds = self.context.data_set
+        if ds is None:
+            ds = Data_set (path, self.logger, self.config)
+            
+        if not files is None:
+            for f in files:
+                ds.append_item(f)
+    
+        self.context.data_set = ds
+        

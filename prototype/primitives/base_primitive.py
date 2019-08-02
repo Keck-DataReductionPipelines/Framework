@@ -28,9 +28,9 @@ Recipes use apply()
 '''
 
 class Base_primitive:
-    '''
-    classdocs
-    '''
+    """
+    This is the base primitive.
+    """
 
     def __init__(self, action, context):
         '''
@@ -58,6 +58,10 @@ class Base_primitive:
                 self.output = output
         return self.output
             
-            
+    def __call__ (self):
+        """
+        Makes objects of this calls callable.
+        """
+        return self.apply()
             
         

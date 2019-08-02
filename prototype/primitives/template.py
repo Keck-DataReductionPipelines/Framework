@@ -4,7 +4,9 @@ Created on Jul 8, 2019
 @author: skwok
 '''
 
-class Template:
+from primitives.base_primitive import Base_primitive
+
+class Template(Base_primitive):
     '''
     classdocs
     '''
@@ -17,6 +19,9 @@ class Template:
         
         
     def _perform (self):
+        """
+        Returns an Argument() with the parameters that depends on this operation.
+        """
         raise Exception ("Not yet implemented")
     
             

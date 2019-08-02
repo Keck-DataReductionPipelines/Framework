@@ -1,18 +1,23 @@
 '''
 Created on Jul 8, 2019
 
-@author: shkwok
+@author: skwok
 '''
 
 import os
 import threading
 import time
 import glob
+import pandas as pd
 
+import astropy.io.fits as pf
+from astropy.utils.exceptions import AstropyWarning
+import warnings
 
 class Data_set:
     '''
-    classdocs
+    Represents the data set
+    Content is stored in self.data_table
     '''
 
     def __init__(self, dirname, logger, config):
@@ -22,28 +27,59 @@ class Data_set:
         self.dir_name = dirname
         self.logger = logger
         self.config = config
-        self.data_table = {}
+        self.data_table = pd.DataFrame()
         self.must_stop = False
         self.monitor_interval = config.monitor_interval
-        self.file_type = config.Config.file_type
+        self.file_type = config.file_type
         self.update_date_set()
     
-    def digest_new_item (self, name):
-        return os.stat(name)
+    def digest_new_item (self, filename):
+        """
+        Returns the information to be stored.
+        The format must be a pd.Series with names and values.
+        The Series will have a name = filename 
+        """
+        
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', AstropyWarning)
+                hdr = pf.getheader(filename)                
+                return pd.Series(dict(zip(hdr.keys(), hdr.values())), name=filename)
+        except Exception as e:
+            self.logger.error (f"Failed to open file {filename}, {e}")
+        
+        return None
+    
+    def append_item (self, filename):
+        """
+        Appends item, if not already exists.
+        """
+        if os.path.isfile(filename) and not filename in self.data_table.index:
+            row = self.digest_new_item (filename)
+            if not row is None:
+                short = os.path.basename(filename)
+                self.logger.info(f"Appending {short} data set")
+                self.data_table = self.data_table.append (row)
+    
         
     def update_date_set (self):
-
-        def digest (long_name):
-            fname = os.path.basename(long_name)
-            item = self.data_table.get(fname)
-            if item is None:
-                self.data_table[fname] = self.digest_new_item (long_name)
-                print ("got", fname)
-            
+        """
+        Updates the content of this data set.
+        Called by loop() when monitoring the directory.
+        Or can be called on demand.
+        """
+        if self.dir_name is None:
+            return
+        if not os.path.isdir(self.dir_name):
+            return
         flist = glob.glob (self.dir_name + '/' + self.file_type)
+        flist = sorted (flist)
         for f in flist:
-            digest (f)
-        
+            self.append_item(f)
+            
+    def getInfo (self, index, column):
+        return self.data_table.at[index, column]
+            
     def loop (self):
         '''
         Waits for changes in the directory, then digests the changes.
@@ -74,8 +110,17 @@ class Data_set:
 
         
 if __name__ == '__main__':
-    data_set = Data_set ('.')
+    
+    from utils.DRPF_logger import getLogger
+    import config.framework_config as framework_config
+
+    config = framework_config.ConfigClass ("config.cfg")
+    logger = getLogger(config.logger_config_file)
+    
+    data_set = Data_set ('../../test_fits', logger, config)
     data_set.start_monitor()
-    time.sleep (50)
+    print ("Waiting ...")
+    time.sleep (10)
+    print ("Done")
     data_set.stop_monitor()
     print (data_set.data_table)
