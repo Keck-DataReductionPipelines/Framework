@@ -34,7 +34,7 @@ class base_ccd_primitive (Base_img):
             files = df[df.IMTYPE == args.want_type]
             nfiles = len(files)
             
-            print ("pre condition", nfiles, args.min_files)
+            self.logger.info ("pre condition", nfiles, args.min_files)
             if nfiles < 1 or nfiles < args.min_files:
                 return False
             return True
