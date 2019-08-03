@@ -11,7 +11,7 @@ import warnings
 from models.arguments import Arguments
 from primitives.base_primitive import Base_primitive
 
-def open_nowaning (filename):
+def open_nowarning (filename):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', AstropyWarning)
         return pf.open(filename)
@@ -36,7 +36,7 @@ class simple_fits_reader (Base_primitive):
         self.logger.info (f"Reading {name}")
         out_args = Arguments()
         out_args.name = name
-        out_args.hdus = open_nowaning(name)
+        out_args.hdus = open_nowarning(name)
         
         return out_args
     

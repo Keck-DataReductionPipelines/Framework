@@ -9,7 +9,16 @@ Created on Jul 19, 2019
 
 import json
 import socket
+
+import matplotlib
+matplotlib.use ('Agg')
+import matplotlib.pyplot as plt
+
+import io
+
 from utils.easyHTTP import EasyHTTPHandler, EasyHTTPServer, EasyHTTPServerThreaded
+from primitives.hist_equal2d import hist_equal2d
+from primitives.simple_fits_reader import open_nowarning
 from utils.try_wrapper import tryEx
 
 from models.arguments import Arguments
@@ -58,7 +67,49 @@ class DRPF_server_handler (EasyHTTPHandler):
                          out_name="contact_sheet.html", cnt=-1)
         self.DRPFramework.append_event ("contact_sheet", args)
         return json.dumps("OK"), self.jsonText
+
+    def _img_to_png (self, imgData):
+        h, w = imgData.shape
+        imgOut = io.BytesIO()
+        dpi = 100
+        fig = plt.figure(figsize=(w/dpi, h/dpi), dpi=dpi)
+        fig.subplots_adjust (left=0, right=1, bottom=0, top=1)
+        
+        hEq = hist_equal2d (None, self.DRPFramework.context)
+        img = hEq._applyAHEC(imgData).reshape((h,w))
+        
+        plt.imshow(img, origin='lower', cmap='gray')
+
+        ax = plt.gca()
+        ax.set_axis_off()
+        fig.savefig(imgOut, format='png')
+        imgOut.seek(0)
+        out = imgOut.read()
+        plt.close()
+        return out
     
+    def _send_imgData (self, imgData):        
+        self.send_response (200, "OK")
+        self.send_header ("Expires", "Feb  1 17:17:37 HST 2016")
+        self.send_header ("Cache-Control", "no-cache, must-revalidate")
+        self.send_header ("Cache-Control", "no-store")
+        self.send_header ("Connection", "close")
+        self.send_header ("Content-Type:", "image/png")
+        self.end_headers ()
+        
+        self.wfile.write (imgData)
+        self.wfile.flush()
+        
+    def serveFile (self, req, qstr):
+        print ("here", req, qstr)
+        if ".fits" in req:
+            self._getParameters(qstr)
+            hdus = open_nowarning(req)
+            png = self._img_to_png(hdus[0].data)
+            self._send_imgData(png)        
+            return None, ""
+        return super().serveFile(req, qstr)
+        
     def echo (self):
         self._getParameters(qstr)
         return json.dumps(qstr), self.PlainTextType            
@@ -66,7 +117,8 @@ class DRPF_server_handler (EasyHTTPHandler):
 
 def start_http_server (fw, config, logger):
     port = config.http_server_port        
-    DRPF_server_handler.DocRoot = config.doc_root
+    DRPF_server_handler.DocRoot = config.http_doc_root
+    DRPF_server_handler.defaultFile = config.http_defaultFile
     DRPF_server_handler.DRPFramework = fw
     httpd = EasyHTTPServerThreaded (("", port), DRPF_server_handler)
     hostname = socket.gethostname()

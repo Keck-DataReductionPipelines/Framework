@@ -7,7 +7,7 @@ Created on Jul 31, 2019
 import numpy as np
 
 from primitives.base_primitive import Base_primitive
-from primitives.simple_fits_reader import open_nowaning
+from primitives.simple_fits_reader import open_nowarning
 
 import astropy.io.fits as pf
 
@@ -29,13 +29,13 @@ class Base_img (Base_primitive):
         if nfiles < 0:
             return None            
 
-        hdus = open_nowaning(file_list[0])        
+        hdus = open_nowarning(file_list[0])        
         stacked = np.copy (hdus[0].data)
         if nfiles == 1:
             return stacked
         
         for b in file_list[1:]:
-            hdus = open_nowaning(b)
+            hdus = open_nowarning(b)
             stacked = stacked + hdus[0].data
         hdus = None
         stacked = stacked / nfiles
@@ -43,7 +43,7 @@ class Base_img (Base_primitive):
         
 
     def save_fits_like (self, new_name, img, like_file, new_imtype):
-        hdus = open_nowaning (like_file)
+        hdus = open_nowarning (like_file)
         hdr = hdus[0].header
         hdr["IMTYPE"] = new_imtype
         fname = self.context.config.temp_directory + "/" + new_name

@@ -1,9 +1,9 @@
-'''
+"""
 Created on Jul 9, 2019
 
         
 @author: skwok
-'''
+"""
 
 import math
 import numpy as np
@@ -12,14 +12,14 @@ from models.arguments import Arguments
 from primitives.base_primitive import Base_primitive
 
 class hist_equal2d (Base_primitive):
-    '''
+    """
     classdocs
-    '''
+    """
 
     def __init__(self, action, context):
-        '''
+        """
         Constructor
-        '''    
+        """    
         Base_primitive.__init__(self, action, context)
         self.cut_width = self.config.hist_equal_cut_width
         self.n_hist = self.config.hist_equal_length
@@ -102,5 +102,5 @@ class hist_equal2d (Base_primitive):
         
         out_args = Arguments()
         out_args.name = args.name
-        out_args.img = self._applyAHEC (img).reshape((h,w)).astype(dtype='uint8')
+        out_args.img = self._applyAHEC (img).reshape((h,w)).astype(dtype="uint8")
         return out_args
