@@ -15,7 +15,10 @@ def classify (df):
     """
     For KCWI, IMTYPE can be OBJECT, CONTBARS, TWIFLAT, BIAS, ARCLAMP, FLATLAMP, DOMEFLAT, nan
     """
-    target_groups = df.groupby(["TARGNAME", "IMTYPE"])
+    #target_groups = df.groupby(["TARGNAME", "IMTYPE"])
+    target_groups = df.groupby(["STATEID", "GROUPID", "TARGNAME"])
+    print(target_groups)
+    
     for gid, gr in target_groups:
         for rid, row in gr.iterrows():
             df.at[rid, "DRP_IMTYPE"] = row.IMTYPE
@@ -38,10 +41,10 @@ if __name__ == "__main__":
 
     for gid, gr in groups:
         nfiles = len(gr)
-        print (f"Target= {gid[0]}, imtype= {gid[1]}, nr files= {nfiles}")
+        print (f"ConfID= {gid[0]}, GroupID= {gid[1]}, nr files= {nfiles}")
 
         sgr = gr.sort_index()
         
         for rid, row in sgr.iterrows():            
-            print (rid, row.TTIME, row.BFILTNAM, row.BFTNAME)
+            print (rid, row.TTIME, row.TARGNAME, row.IMTYPE)
     
