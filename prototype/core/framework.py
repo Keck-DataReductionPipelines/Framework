@@ -40,14 +40,13 @@ class Framework(object):
         '''
         self.config = ConfigClass (configFile)
         self.logger = getLogger (self.config.logger_config_file, name ="DRPF")
-        
         pipeline.set_logger (self.logger)
         
         self.event_queue = Event_queue()
         self.event_queue_hi = Event_queue()   
         
         self.pipeline = pipeline
-        self.context = Processing_context (self.event_queue_hi, self.logger, self.config)    
+        self.context = Processing_context (self.event_queue_hi, self.logger, self.config)
         self.keep_going = True        
         self.init_signal ()
     
@@ -154,7 +153,9 @@ class Framework(object):
                     self.logger.error (f"Exception while processing action {action}, {e}")
                     break                
             self.keep_going = False
-            
+
+
+
         thr = threading.Thread (name='action_loop', target=loop)
         thr.setDaemon(True)
         thr.start()

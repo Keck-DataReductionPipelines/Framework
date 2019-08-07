@@ -113,7 +113,7 @@ class Base_pipeline:
         return f
     
     def noop (self, action, context):
-        self.logger.info (f"NOOP action {action}")
+        self.logger.info ("NOOP action")
     
     def no_more_action (self, ation, context):
         self.logger.info ("No more action, terminating")

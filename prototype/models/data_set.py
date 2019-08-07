@@ -32,7 +32,7 @@ class Data_set:
         self.monitor_interval = config.monitor_interval
         self.file_type = config.file_type
         self.update_date_set()
-    
+
     def digest_new_item (self, filename):
         """
         Returns the information to be stored.
@@ -78,7 +78,11 @@ class Data_set:
             self.append_item(f)
             
     def getInfo (self, index, column):
-        return self.data_table.at[index, column]
+        try:
+            return self.data_table.at[index, column]
+        except:
+            self.logger.warn("Keyword %s is not avaialble" % str(column))
+            return None
             
     def loop (self):
         '''
