@@ -23,8 +23,13 @@ class Kcwi_pipeline(Base_pipeline):
         # BIAS
         "process_bias": ("process_bias", None, None),
         # CONTBARS PROCESSING
-        "process_contbars": ("process_contbars", "contbars_processing_started", "subtract_overscan"),
-        "subtract_overscan": ("subtract_overscan", "subtract_overscan_started", None),
+        "process_contbars": ("process_contbars", "contbars_processing_started", "contbar_subtract_overscan"),
+        "contbar_subtract_overscan": ("subtract_overscan", "subtract_overscan_started", "contbar_trim_overscan"),
+        "contbar_trim_overscan": ("trim_overscan", "trim_overscan_started", "contbar_correct_gain"),
+        "contbar_correct_gain": ("correct_gain", "gain_correction_started", "contbar_find_bars"),
+        "contbar_find_bars": ("find_bars", "find_bars_started", "contbar_trace_bars"),
+        "contbar_trace_bars": ("trace_bars", "trace_bars_started", None),
+
         "process_arcs": ("process_arc", None, None),
         # FLAT
         "process_flat": ("process_flat", None, None),

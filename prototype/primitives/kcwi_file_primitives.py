@@ -2,7 +2,39 @@ from models.arguments import Arguments
 from astropy.io import fits
 from astropy.nddata import CCDData
 from primitives.base_primitive import Base_primitive
+import os
 import math
+
+
+def parse_imsec(section=None):
+
+        xfor = True
+        yfor = True
+
+        p1 = int(section[1:-1].split(',')[0].split(':')[0])
+        p2 = int(section[1:-1].split(',')[0].split(':')[1])
+        p3 = int(section[1:-1].split(',')[1].split(':')[0])
+        p4 = int(section[1:-1].split(',')[1].split(':')[1])
+        # tests for individual axes
+        if p1 > p2:
+            x0 = p2 - 1
+            x1 = p1 - 1
+            xfor = False
+        else:
+            x0 = p1 - 1
+            x1 = p2 - 1
+        if p3 > p4:
+            y0 = p4 - 1
+            y1 = p3 - 1
+            yfor = False
+        else:
+            y0 = p3 - 1
+            y1 = p4 - 1
+        # package output
+        sec = (y0, y1, x0, x1)
+        rfor = (yfor, xfor)
+        # use python axis ordering
+        return sec, rfor
 
 class ingest_file(Base_primitive):
 
@@ -14,39 +46,6 @@ class ingest_file(Base_primitive):
 
     def get_keyword(self, keyword):
         return self.context.data_set.getInfo(self.name, keyword)
-
-    def parse_imsec(self, section_key=None):
-        if section_key is None:
-            return None, None
-        else:
-            # forward read?
-            xfor = True
-            yfor = True
-            section = self.get_keyword(section_key)
-            p1 = int(section[1:-1].split(',')[0].split(':')[0])
-            p2 = int(section[1:-1].split(',')[0].split(':')[1])
-            p3 = int(section[1:-1].split(',')[1].split(':')[0])
-            p4 = int(section[1:-1].split(',')[1].split(':')[1])
-            # tests for individual axes
-            if p1 > p2:
-                x0 = p2 - 1
-                x1 = p1 - 1
-                xfor = False
-            else:
-                x0 = p1 - 1
-                x1 = p2 - 1
-            if p3 > p4:
-                y0 = p4 - 1
-                y1 = p3 - 1
-                yfor = False
-            else:
-                y0 = p3 - 1
-                y1 = p4 - 1
-            # package output
-            sec = (y0, y1, x0, x1)
-            rfor = (yfor, xfor)
-            # use python axis ordering
-            return sec, rfor
 
     def camera(self):
         camera = self.get_keyword('CAMERA')
@@ -283,9 +282,11 @@ class ingest_file(Base_primitive):
         direc = []
         # loop over amps
         for i in range(namps):
-            sec, rfor = self.parse_imsec(section_key='BSEC%d' % (i + 1))
+            section = self.get_keyword('BSEC%d' % (i + 1))
+            sec, rfor = parse_imsec(section)
             bsec.append(sec)
-            sec, rfor = self.parse_imsec(section_key='DSEC%d' % (i + 1))
+            section = self.get_keyword('DSEC%d' % (i + 1))
+            sec, rfor = parse_imsec(section)
             dsec.append(sec)
             direc.append(rfor)
             if i == 0:
@@ -359,11 +360,11 @@ class ingest_file(Base_primitive):
         # ATRES
         out_args.atres = self.atres()
         # NAMPS
-        out_args.namps = self.get_keyword('NVIDINP')
+        out_args.namps = int(self.get_keyword('NVIDINP'))
         # NASMASK
         out_args.nasmak = self.nasmask()
         # BINNING
-        out_args.xbinsize, out_args.ybinsize = self.get_keyword('BINNING').split(',')
+        out_args.xbinsize, out_args.ybinsize = map(int, self.get_keyword('BINNING').split(','))
         # IFUNUM
         out_args.ifunum = self.get_keyword('IFUNUM')
         # IFUNAM
@@ -445,8 +446,13 @@ class kcwi_fits_ingest(Base_primitive):
         return out_args
 
 
-def kcwi_fits_writer(ccddata, table=None, output_file=None):
+def kcwi_fits_writer(ccddata, table=None, output_file=None, suffix=None):
+    output_file = os.path.join(os.path.dirname(output_file),'redux', os.path.basename(output_file))
+    if suffix is not None:
+        output_file = output_file.split('.')[0]+"_"+suffix+".fits"
     hdus_to_save = ccddata.to_hdu()
-    if table is not None:
-        hdus_to_save.append(table)
+    #if table is not None:
+    #    hdus_to_save.append(table)
+    hdus_to_save.info()
+    print("Saving to %s" % output_file)
     hdus_to_save.writeto(output_file, overwrite=True)

@@ -15,10 +15,6 @@ from config.framework_config import ConfigClass
 
 from pipelines.kcwi_pipeline import Kcwi_pipeline
 from models.arguments import Arguments
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as pl
-
 
 if __name__ == '__main__':
 
