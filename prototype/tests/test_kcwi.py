@@ -7,6 +7,7 @@ Test Fits to PNG pipeline with HTTP server.
 '''
 
 import sys
+sys.path.append('/Users/lrizzi/Python_Projects/Framework/prototype')
 import os.path
 import glob
 
@@ -15,12 +16,17 @@ from config.framework_config import ConfigClass
 
 from pipelines.kcwi_pipeline import Kcwi_pipeline
 from models.arguments import Arguments
+import subprocess
+import time
+
 
 if __name__ == '__main__':
 
-
     if len(sys.argv) >= 2:
         path = sys.argv[1]
+
+        #subprocess.Popen('bokeh serve', shell=True)
+        #time.sleep(2)
 
         pipeline = Kcwi_pipeline()
         framework = Framework(pipeline, 'config.cfg')
@@ -31,7 +37,10 @@ if __name__ == '__main__':
 
 
         if os.path.isdir(path):
-            flist = glob.glob(path + '/*.fits')
+            #flist = glob.glob(path + '/*.fits')
+            flist = ['/Users/lrizzi/KCWI_DATA_1/kb181012_00014.fits',
+                     '/Users/lrizzi/KCWI_DATA_1/kb181012_00016.fits']
+            flist = ['/Users/lrizzi/KCWI_DATA_1/kb181012_00016.fits']
             for f in flist:
                 args = Arguments(name=f)
                 framework.append_event('next_file', args)
@@ -42,5 +51,6 @@ if __name__ == '__main__':
 
         framework.start()
         framework.waitForEver()
+
     else:
         print ("Usage {} dir_or_file".format(sys.argv[0]))

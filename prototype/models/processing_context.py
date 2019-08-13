@@ -23,6 +23,7 @@ class Processing_context:
         self.logger = logger
         self.config = config
         self.data_set = Data_set (None, logger, config)
+        #self.bokeh_session = bokeh_session
         
     def push_event (self, name, args):
         self.event_queue_hi.put(Event (name, args))

@@ -122,6 +122,7 @@ def start_http_server (fw, config, logger):
     DRPF_server_handler.DRPFramework = fw
     httpd = EasyHTTPServerThreaded (("", port), DRPF_server_handler)
     hostname = socket.gethostname()
+    hostname = '127.0.0.1'
     logger.info ("HTTPD started %s %d" % (socket.gethostbyaddr(socket.gethostbyname(hostname)), port))
     logger.info ("DocRoot is " +  DRPF_server_handler.DocRoot)
     

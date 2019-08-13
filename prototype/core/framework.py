@@ -24,6 +24,12 @@ from models.data_set import Data_set
 from utils.DRPF_logger import getLogger
 
 from config.framework_config import ConfigClass
+from bokeh.client import push_session
+from bokeh.io import curdoc
+from bokeh.plotting.figure import figure
+from bokeh.layouts import column
+
+
 
 
 class Framework(object):
@@ -47,7 +53,7 @@ class Framework(object):
         
         self.pipeline = pipeline
         self.context = Processing_context (self.event_queue_hi, self.logger, self.config)
-        self.keep_going = True        
+        self.keep_going = True
         self.init_signal ()
     
     def get_event (self):
@@ -132,6 +138,14 @@ class Framework(object):
         '''
 
         def loop ():
+            #if self.context.config.instrument.interactive >=1:
+
+            self.context.bokeh_session = push_session(curdoc())
+            p=figure()
+            c=column(children=[p])
+            curdoc().add_root(c)
+            self.context.bokeh_session.show(c)
+
             while self.keep_going:
                 try:    
                     action = ''

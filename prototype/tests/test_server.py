@@ -6,16 +6,18 @@ Test Fits to PNG pipeline with HTTP server.
 @author: skwok
 '''
 
+
+
 import sys
 import os.path
 import glob
-import threading
 
 from core.framework import Framework
+from config.framework_config import ConfigClass
 
-from pipelines.fits2png_pipeline import Fits2png_pipeline
+from pipelines.kcwi_pipeline import Kcwi_pipeline
 from models.arguments import Arguments
-
+import subprocess
 import time
 
 #
@@ -25,32 +27,20 @@ import time
 
 if __name__ == '__main__':
     
-    if len (sys.argv) >= 2:
-        path = sys.argv[1]
-    
-        pipeline = Fits2png_pipeline() 
-        framework = Framework(pipeline, "config.cfg") 
-               
-        framework.logger.info ("Framework initialized")
-        
+    if len (sys.argv) >= 1:
+        #path = sys.argv[1]
+
+        subprocess.Popen('bokeh serve', shell=True)
+        time.sleep(2)
+
+        pipeline = Kcwi_pipeline()
+        framework = Framework(pipeline, 'config.cfg')
+        framework.config.instrument = ConfigClass("instr.cfg")
+        framework.logger.info("Framework initialized")
+
         framework.start_http_server()
         framework.logger.info ("HTTP server started")
-        
-            
-        # if os.path.isdir(path):
-        #     flist = glob.glob(path + '/*.fits')
-        #     for f in flist:
-        #         args = Arguments(name=f)
-        #         framework.append_event ('next_file', args)
-        #
-        #
-        #     out_dir = framework.config.output_directory
-        #     framework.append_event ('contact_sheet',
-        #         Arguments(dir_name=out_dir, pattern='*.png', out_name='test.html', cnt=len(flist)))
-        #
-        # else:
-        #     args = Arguments(name=path)
-        #     framework.append_event('next_file', args)
+
         
         framework.start()                
         framework.waitForEver()

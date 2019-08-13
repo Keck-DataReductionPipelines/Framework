@@ -1,6 +1,8 @@
 from models.arguments import Arguments
 from astropy.io import fits
 from astropy.nddata import CCDData
+from astropy.table import Table
+
 from primitives.base_primitive import Base_primitive
 import os
 import math
@@ -445,6 +447,36 @@ class kcwi_fits_ingest(Base_primitive):
 
         return out_args
 
+def write_table(output_dir = None, table=None, names=None,
+                    comment=None, keywords=None, output_name=None):
+    output_file = os.path.join(output_dir, 'redux', output_name)
+    #if suffix is not None:
+    #    output_file = output_file.split('.')[0]+"_"+suffix+".fits"
+
+    t = Table(table, names=names)
+    if comment:
+        t.meta['COMMENT'] = comment
+    if keywords:
+        for k, v in keywords.items():
+            t.meta[k] = v
+    try:
+        t.write(output_file, format='fits')
+    except:
+        print("Table already exists")
+        #self.log.info("output file: %s" % outfn)
+
+def read_table(input_dir = None, file_name = None):
+        # Set up return table
+        input_file = os.path.join(input_dir, 'redux', file_name)
+        # Construct table file name
+        #if suffix is not None:
+        #    input_file = input_file.split('.')[0] + "_" + suffix + ".fits"
+        print("Trying to read table: %s" % input_file)
+        try:
+            retab = Table.read(input_file, format='fits')
+        except:
+            print("No table to read")
+        return retab
 
 def kcwi_fits_writer(ccddata, table=None, output_file=None, suffix=None):
     output_file = os.path.join(os.path.dirname(output_file),'redux', os.path.basename(output_file))
@@ -453,6 +485,6 @@ def kcwi_fits_writer(ccddata, table=None, output_file=None, suffix=None):
     hdus_to_save = ccddata.to_hdu()
     #if table is not None:
     #    hdus_to_save.append(table)
-    hdus_to_save.info()
+    #hdus_to_save.info()
     print("Saving to %s" % output_file)
     hdus_to_save.writeto(output_file, overwrite=True)
