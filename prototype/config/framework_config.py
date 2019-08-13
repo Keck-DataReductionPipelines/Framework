@@ -13,7 +13,6 @@ To do:
 
 from models.event import Event
 import datetime
-#from Cython.Shadow import typeof
 
 
 class ConfigClass:    
